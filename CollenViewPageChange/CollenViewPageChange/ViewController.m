@@ -8,9 +8,9 @@
 
 #import "ViewController.h"
 #import "MyCollectionViewCell.h"
-
 @interface ViewController ()<UICollectionViewDelegate, UICollectionViewDataSource>
 @property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, strong) UICollectionViewFlowLayout *layout;
 @property (nonatomic, strong) NSArray * dataArray;
 @property (nonatomic, assign) CGFloat offer;
 @end
@@ -20,13 +20,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    
     UICollectionViewFlowLayout * layout = [[UICollectionViewFlowLayout alloc]init];
     layout.itemSize = CGSizeMake(self.view.bounds.size.width - 40, self.view.bounds.size.height);
-    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);
-    layout.minimumLineSpacing = 0;
+    layout.sectionInset = UIEdgeInsetsMake(0, 20, 0, 20);
+    layout.minimumLineSpacing = 10;
     layout.minimumInteritemSpacing = 0;
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    _layout = layout;
     
     _collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height) collectionViewLayout:layout];
     _collectionView.backgroundColor = [UIColor whiteColor];
@@ -38,6 +38,7 @@
     
     _dataArray = @[[UIColor redColor], [UIColor yellowColor], [UIColor blueColor], [UIColor greenColor], [UIColor blackColor]];
 }
+
 
 #pragma mark - UICollectionViewDataSource
 
@@ -56,29 +57,54 @@
     
 }
 
-//系统动画停止是刷新当前偏移量_offer是我定义的全局变量
+//用户慢慢拖拽时调用
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset{
+//    if (fabs(scrollView.contentOffset.x -_offer) > (self.view.bounds.size.width-40)/2+10) {
+    if ((scrollView.contentOffset.x-_offer) > (_layout.itemSize.width/2+10)||(_offer > scrollView.contentOffset.x && (_offer-scrollView.contentOffset.x)<(_layout.itemSize.width/2+10))){
+        int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30)+1;
+        if (i >= _dataArray.count) {
+            return;
+        }
+        NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
+        [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    }
+    else {
+        int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30);
+        //        if (i < 1) {
+        //            return;
+        //        }
+        NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
+        [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    }
+}
 
+//滑动减速是触发的代理，当用户用力滑动或者清扫时触发
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
+    if (scrollView.contentOffset.x-_offer > 15 || (_offer > scrollView.contentOffset.x && _offer-scrollView.contentOffset.x < 15)) {
+        int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30)+1;
+              if (i >= _dataArray.count) {
+                  return;
+              }
+              NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
+              [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    }
+    else {
+         int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30);
+        //        if (i < 1) {
+        //            return;
+        //        }
+                NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
+                [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    }
+}
+
+//系统动画停止是刷新当前偏移量_offer是我定义的全局变量
 -(void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView{
     _offer = scrollView.contentOffset.x;
     NSLog(@"end========%f",_offer);
     
 }
 
-//滑动减速是触发的代理，当用户用力滑动或者清扫时触发
-
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView{
-    if (fabs(scrollView.contentOffset.x -_offer) > 10) {
-        [self scrollToNextPage:scrollView];
-    }
-}
-
-//用户拖拽是调用
-
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset{
-    if (fabs(scrollView.contentOffset.x -_offer) > 20) {
-        [self scrollToNextPage:scrollView];
-    }
-}
 
 -(void)scrollToNextPage:(UIScrollView *)scrollView{
     if (scrollView.contentOffset.x > _offer) {
@@ -89,11 +115,11 @@
         NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
         [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
     }else{
-        int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30)+1;
-        if (i < 1) {
-            return;
-        }
-        NSIndexPath * index =  [NSIndexPath indexPathForRow:i-1 inSection:0];
+        int i = scrollView.contentOffset.x/([UIScreen mainScreen].bounds.size.width - 30);
+//        if (i < 1) {
+//            return;
+//        }
+        NSIndexPath * index =  [NSIndexPath indexPathForRow:i inSection:0];
         [_collectionView scrollToItemAtIndexPath:index atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
     }
 }
