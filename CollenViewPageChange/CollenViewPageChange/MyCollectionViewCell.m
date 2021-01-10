@@ -17,19 +17,22 @@
 -(instancetype)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
     if (self) {
-        _colorView = [[UIView alloc]init];
-        [self.contentView addSubview:_colorView];
+//        _colorView = [[UIView alloc]init];
+//        self.contentView.backgroundColor = [UIColor grayColor];
+//        [self.contentView addSubview:_colorView];
     }
     return self;
 }
 
--(void)layoutSubviews{
-    _colorView.frame = CGRectMake(20, 0, self.bounds.size.width - 40, self.bounds.size.height);
-}
+//-(void)layoutSubviews{
+//    [super layoutSubviews];
+//    _colorView.frame = CGRectMake(0, 0, self.bounds.size.width - 40, self.bounds.size.height);
+//}
 
 -(void)setContensColor:(UIColor *)contensColor{
     _contensColor = contensColor;
-    _colorView.backgroundColor = _contensColor;
+//    _colorView.backgroundColor = _contensColor;
+    self.contentView.backgroundColor = _contensColor;
 }
 
 @end
